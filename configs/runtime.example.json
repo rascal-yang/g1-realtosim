@@ -1,0 +1,5 @@
+{
+  "isaac_python": "${HOME}/miniconda3/envs/sonic/bin/python",
+  "export_python": "../.venv-export/bin/python",
+  "env": {}
+}

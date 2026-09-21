@@ -1,0 +1,115 @@
+[
+  {
+    "source": "${HOME}/.codex/skills/scene-asset-router/SKILL.md",
+    "destination": "skills/scene-asset-router/SKILL.md",
+    "source_sha256": "aa4877a89eaf2790c0979e4ef6f1bd86c8540a7531ad43e6f537461abc0af9db"
+  },
+  {
+    "source": "${HOME}/.codex/skills/scene-asset-router/references/simulation.md",
+    "destination": "skills/scene-asset-router/references/simulation.md",
+    "source_sha256": "7e4c2e657b5f125bad0d6dd2583dec0175aa86cb282f574c3be91222f2ecc932"
+  },
+  {
+    "source": "${HOME}/.codex/skills/scene-asset-router/references/local-tools.md",
+    "destination": "skills/scene-asset-router/references/local-tools.md",
+    "source_sha256": "8bf243613342cbf807bce73de29538237729166cad7a9aeb9bf632ffc0344f44"
+  },
+  {
+    "source": "${HOME}/.codex/skills/scene-asset-router/agents/openai.yaml",
+    "destination": "skills/scene-asset-router/agents/openai.yaml",
+    "source_sha256": "67929f65fb3cc6201e0ef544d85f051b78b028932fafb875441532bbbd2f829a"
+  },
+  {
+    "source": "${HOME}/.codex/skills/sim-visual-realism-review/SKILL.md",
+    "destination": "skills/sim-visual-realism-review/SKILL.md",
+    "source_sha256": "69b62eb03057fca74a63235a72f804bc4b14428f012a34dcbf6d63a5a38dad76"
+  },
+  {
+    "source": "${HOME}/.codex/skills/g1-grasp-runtime-review/SKILL.md",
+    "destination": "skills/g1-grasp-runtime-review/SKILL.md",
+    "source_sha256": "6b51eef2f2d89be1d36b05aca9e319c2f4de12ff9cbd0fa46e0039ee54ef5a22"
+  },
+  {
+    "source": "${HOME}/.codex/skills/g1-grasp-runtime-review/references/bottle_multistart_20260921.md",
+    "destination": "skills/g1-grasp-runtime-review/references/bottle_multistart_20260921.md",
+    "source_sha256": "1afe8f8e8ab9677190c3972a83f724ea8bdffae2308322d69efdf34c9391bfa2"
+  },
+  {
+    "source": "${HOME}/code/zijian/asset_tasks/20260920_photo_scene/scripts/fit_layout.py",
+    "destination": "recipes/office_photo_scene/fit_layout.py",
+    "source_sha256": "28bad6a7c8365bf8590aee56457e4aab69b8a49cbbe0c2a2ece2869f520f7b76",
+    "adaptation": "Explicit case/output and asset environment variables; office-specific annotations unchanged."
+  },
+  {
+    "source": "${HOME}/code/zijian/asset_tasks/20260920_photo_scene/scripts/fit_window.py",
+    "destination": "recipes/office_photo_scene/fit_window.py",
+    "source_sha256": "32c166ae7dd30b6b6407a3d25dec8f8cf79e1c73c5b4ad381cca37e6451d906a",
+    "adaptation": "Explicit case/output and asset environment variables; office-specific annotations unchanged."
+  },
+  {
+    "source": "${HOME}/code/zijian/asset_tasks/20260920_photo_scene/scripts/prepare_assets.py",
+    "destination": "recipes/office_photo_scene/prepare_assets.py",
+    "source_sha256": "864366cf439c9aa9ecc202a602391b567c80899e0881588b0a826d397c4faea3",
+    "adaptation": "Explicit case/output and asset environment variables; office-specific annotations unchanged."
+  },
+  {
+    "source": "${HOME}/code/zijian/asset_tasks/20260920_photo_scene/scripts/build_scene_blender.py",
+    "destination": "recipes/office_photo_scene/build_scene_blender.py",
+    "source_sha256": "40c3f15004f5eaf40b9d40da634a40cdc3f5f26c82497c5f064d5363d8c751dd",
+    "adaptation": "Explicit case/output and asset environment variables; office-specific annotations unchanged."
+  },
+  {
+    "source": "${HOME}/code/zijian/asset_tasks/20260920_photo_scene/scripts/package_scene.py",
+    "destination": "recipes/office_photo_scene/package_scene.py",
+    "source_sha256": "52dec50f8af16b7c632ccf8f978e708d7eaf9fad5711bd3be32564cb4cc7a816",
+    "adaptation": "Explicit case/output and asset environment variables; office-specific annotations unchanged."
+  },
+  {
+    "source": "${HOME}/code/zijian/asset_tasks/20260920_photo_scene/scripts/build_bottle.py",
+    "destination": "recipes/office_photo_scene/build_bottle.py",
+    "source_sha256": "0ff1e18c9dd990f7d295c64f176a6447e21a0cecd3b979d53ada806515279c3c",
+    "adaptation": "Explicit case/output and asset environment variables; office-specific annotations unchanged."
+  },
+  {
+    "source": "${HOME}/code/zijian/asset_tasks/20260920_photo_scene/scripts/write_manifest.py",
+    "destination": "recipes/office_photo_scene/write_manifest.py",
+    "source_sha256": "875f0f69800b68bf4f09940b6395b6a6c5a0cd5e9406e4e54c16b4085af97a22",
+    "adaptation": "Explicit case/output and asset environment variables; office-specific annotations unchanged."
+  },
+  {
+    "source": "${HOME}/code/zijian/experiments/20260921_five_directions_128/code/training_capture.py",
+    "destination": "integrations/training_capture.py",
+    "status": "reference integration, not standalone controller",
+    "source_sha256": "d07627e2a2a9e8b8e01a7ff09118992df0aa5d528016cfd7f2f8d2756807d792"
+  },
+  {
+    "source": "${HOME}/code/zijian/experiments/20260921_five_directions_128/code/brainco_adapter.py",
+    "destination": "integrations/brainco_adapter.py",
+    "status": "reference integration, not standalone controller",
+    "source_sha256": "1a3c06d78b8be9517959ab7f15aee79b77213757825c7ac1dea1ec8050d4f540"
+  },
+  {
+    "source": "${HOME}/code/zijian/experiments/20260921_five_directions_128/code/sonic_planner_goals.py",
+    "destination": "integrations/sonic_planner_goals.py",
+    "status": "reference integration, not standalone controller",
+    "source_sha256": "28dcbf913a314e6b5559db888de9cf923988467f46058522a47f933c7aa7c99f"
+  },
+  {
+    "source": "${HOME}/code/zijian/experiments/20260921_rt2_vs_pt128_full/scripts/render_rt2.py",
+    "source_sha256": "17b23d2bf5b5c23cca9a55139cb077f131eed68a0438eaa688e25da2d944885b",
+    "destination": "src/g1_realtosim/render.py",
+    "adaptation": "Unified RT2/PT128; explicit episode/output/profile; dynamic maps; configurable frame selection; camera validation"
+  },
+  {
+    "source": "${HOME}/code/zijian/g1_closed_loop/plush_asset/reconstruct.py",
+    "source_sha256": "4d5834e46da7fa61d842790fce50bf1e15de81a96342686976452e65ae4e8229",
+    "destination": "recipes/hunyuan/reconstruct.py",
+    "adaptation": "Parameterized inputs/output/checkouts/cache; removed implicit shared weight conversion and host driver mutation"
+  },
+  {
+    "source": "${HOME}/code/zijian/policy_memory/g1_revo2_rigid_bottle.json",
+    "destination": "skills/g1-grasp-runtime-review/references/bottle_experience.json",
+    "source_sha256": "3dc3e446ed3e3efa648392656ad0b7e5dd85ba5123289ffbfd6f794ceb911e6b",
+    "adaptation": "Preserved experience statuses; source host path represented by HOME."
+  }
+]

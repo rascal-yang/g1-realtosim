@@ -1,0 +1,7 @@
+interface:
+  display_name: "场景与物体建模自动路由"
+  short_description: "按物体与部件自动选择程序化建模、图生三维或混合路线，并检查仿真交付质量"
+  default_prompt: "使用 $scene-asset-router，根据我的文字、照片或视频自动选择建模工具，完成场景组装，并按用途验证和交付资产。"
+
+policy:
+  allow_implicit_invocation: true

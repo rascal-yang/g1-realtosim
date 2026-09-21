@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "g1-realtosim"
+version = "0.1.0"
+description = "Agent-assisted real-to-sim assets and aligned G1 egocentric datasets"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.24", "h5py>=3.8", "Pillow>=10", "scipy>=1.10", "imageio>=2.31", "imageio-ffmpeg>=0.4"]
+
+[project.optional-dependencies]
+export = ["lerobot==0.4.3", "av==15.1.0"]
+
+[project.scripts]
+g1-realtosim = "g1_realtosim.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

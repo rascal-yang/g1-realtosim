@@ -1,0 +1,13 @@
+{
+  "source_raw": "../data/example/episode_raw.h5",
+  "stage": "../data/example/isaac_initial_scene.usdc",
+  "control_stride": 2,
+  "env_prim": "/World/envs/env_0",
+  "object_prim": "/World/envs/env_0/Object",
+  "camera_prim": "/World/Capture/head",
+  "scene_prims": {
+    "basket": "/World/envs/env_0/Room/Scene/Basket",
+    "plush": "/World/envs/env_0/Room/Plush",
+    "table": "/World/envs/env_0/Table"
+  }
+}

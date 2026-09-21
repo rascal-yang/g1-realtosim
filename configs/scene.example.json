@@ -1,0 +1,106 @@
+{
+  "units": "m",
+  "up_axis": "Z",
+  "scale_anchor": {
+    "status": "designed",
+    "description": "synthetic smoke scene; not a reconstructed real scene"
+  },
+  "objects": [
+    {
+      "id": "table",
+      "kind": "box",
+      "size_m": [
+        1.2,
+        0.6,
+        0.04
+      ],
+      "position_m": [
+        0,
+        0,
+        0.72
+      ],
+      "quaternion_wxyz": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "material": {
+        "base_color": [
+          0.6,
+          0.45,
+          0.3
+        ],
+        "roughness": 0.5,
+        "metallic": 0,
+        "status": "designed"
+      },
+      "texture": {
+        "status": "none",
+        "path": null
+      },
+      "physics": {
+        "rigid": false,
+        "mass_kg": 0,
+        "collision": true,
+        "static_friction": 0.6,
+        "dynamic_friction": 0.5,
+        "deformable": false,
+        "status": "designed"
+      },
+      "evidence": {
+        "source": "synthetic CLI smoke fixture",
+        "size_status": "designed",
+        "placement_status": "designed"
+      }
+    },
+    {
+      "id": "object",
+      "kind": "box",
+      "size_m": [
+        0.07,
+        0.07,
+        0.2
+      ],
+      "position_m": [
+        0,
+        0,
+        0.85
+      ],
+      "quaternion_wxyz": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "material": {
+        "base_color": [
+          0.2,
+          0.3,
+          0.8
+        ],
+        "roughness": 0.5,
+        "metallic": 0,
+        "status": "designed"
+      },
+      "texture": {
+        "status": "none",
+        "path": null
+      },
+      "physics": {
+        "rigid": true,
+        "mass_kg": 0.2,
+        "collision": true,
+        "static_friction": 0.6,
+        "dynamic_friction": 0.5,
+        "deformable": false,
+        "status": "designed"
+      },
+      "evidence": {
+        "source": "synthetic CLI smoke fixture",
+        "size_status": "designed",
+        "placement_status": "designed"
+      }
+    }
+  ]
+}
