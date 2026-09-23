@@ -90,3 +90,7 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 ```
 
 [数据契约](docs/DATA_CONTRACT.md) · [环境说明](docs/ENVIRONMENT.md) · [来源与许可边界](NOTICE.md)
+
+## 人体交互视频到 G1
+
+执行提示与验收要求见 [HUMAN_VIDEO_TO_SIM_PROMPT.md](docs/HUMAN_VIDEO_TO_SIM_PROMPT.md)，涵盖全身重建、独立物体跟踪、重定向、物理支撑基线与视觉质量检查。该文档不表示端到端抓取已通过。
