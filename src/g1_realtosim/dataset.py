@@ -13,6 +13,8 @@ BODY_FIELDS = ['joint_position_target','joint_velocity_target','joint_effort_com
 
 def verify(raw, frames):
     with h5py.File(raw) as f, h5py.File(frames) as g:
+        if 'rgb' not in g:
+            raise ValueError('No lossless RGB dataset: video-only renders use their indexed video bundle; rerender without --video-only for aligned HDF5 export')
         idx=g['control_index'][:];t=f['observation/timestamp'][:];n=len(t)
         declared=g.attrs.get('source')
         if declared and Path(declared).resolve()!=Path(raw).resolve():

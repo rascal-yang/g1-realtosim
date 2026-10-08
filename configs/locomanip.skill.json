@@ -1,0 +1,16 @@
+{
+  "schema": "bimanual_skill_v1",
+  "task": "Lift the same rigid box with two opposed hands and place it elsewhere on the office desk",
+  "source": {"kind": "user_authorized_design", "video": null, "video_start_s": null, "video_end_s": null},
+  "manual_steps": ["Agent chooses a two-palm opposing contact strategy and phase order", "User authorizes office-scene task design; no video supplied"],
+  "manual_annotation_seconds": 0,
+  "human_engineering_seconds": null,
+  "frames": {"world": "right-handed Z-up", "box": "asset rigid root", "goal": "world pose on desk", "units": "m,s,rad", "quaternion": "wxyz"},
+  "roles": {"left": "press negative box-X face", "right": "press positive box-X face"},
+  "coupling": {"mode": "one_shared_object_pose", "synchronized": ["close", "lift", "transport", "lower", "release"], "independent_arm_warps_allowed": false},
+  "phase_durations_s": [["settle",1], ["approach",3], ["close",2], ["lift",2], ["transport",3], ["lower",2], ["release",2], ["retreat",2], ["verify",2]],
+  "geometry": {"source": "known_USD_collision_mesh", "status": "simulation_asset_not_video_estimate", "metric_video_pose": null, "confidence": null},
+  "controller": {"hand_offset_outside_bbox_m": 0.012, "hand_z_offset_m": 0.07, "open_gap_m": 0.08, "lift_m": 0.12, "contact_strategy": "opposed_Panda_hand_housings", "finger_target_m": 0},
+  "augmentation": {"initial_xy_half_range_m": 0.025, "goal_xy_half_range_m": 0.025, "initial_yaw_half_range_rad": 0.1, "goal_yaw_half_range_rad": 0.1},
+  "limitations": ["No video inference executed", "Fixed-base dual arms; no humanoid balance validation", "No cross-shape augmentation", "Panda self-collision is disabled; external contact stops active"]
+}

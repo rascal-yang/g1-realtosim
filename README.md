@@ -93,7 +93,15 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 
 ## 人体交互视频到 G1
 
+固定基座双臂搬箱与同资产位置/朝向扩增的实际入口见 [LOCOMANIP_BASELINE.md](docs/LOCOMANIP_BASELINE.md)。该 baseline 使用办公室资产、Panda 双臂、PhysX 接触验证和现有 RT2 渲染；尚未验证 G1 站立或持箱步行。
+
 执行提示与验收要求见 [HUMAN_VIDEO_TO_SIM_PROMPT.md](docs/HUMAN_VIDEO_TO_SIM_PROMPT.md)，涵盖全身重建、独立物体跟踪、重定向、物理支撑基线与视觉质量检查。该文档不表示端到端抓取已通过。
+
+G1 提篮的物理种子与扩增入口见 [G1 篮子 baseline](docs/G1_BASKET_BASELINE.md)。
+
+G1 抓取—搬移—放置与独立目标扩增见 [篮子放置实验](docs/G1_BASKET_PLACE.md)。
+
+GPT编写动作规格后，参数化生成Blender动画及G1参考轨迹的入口见 [动画自动化](docs/G1_ANIMATION_AUTOMATION.md)；可复用[任务提示词](docs/G1_ANIMATION_TASK_PROMPT.md)。当前技能族限定原办公室右手提篮，几何导出通过不等于物理成功。
 
 ## 渲染配置与对比
 

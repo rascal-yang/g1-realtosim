@@ -1,0 +1,119 @@
+{
+  "task": "G1 right hand grasps basket handle, lifts, transfers left/back, places and releases",
+  "author": "GPT/Codex session authored motion specification; no external generation API",
+  "robot": "same calibrated G1/Revo2",
+  "initial_state_source": "procedural MJCF parked stance, not previous measured trajectory",
+  "units": "m,s,rad; Z up; quaternions wxyz",
+  "fps": 30,
+  "duration_s": 34,
+  "root_position_m": [
+    0.22,
+    -0.51,
+    0.746875
+  ],
+  "root_yaw_rad": 1.5707963267948966,
+  "basket_initial_position_m": [
+    0.32,
+    -0.11,
+    0.75
+  ],
+  "basket_goal_xy_m": [
+    0.24,
+    -0.16
+  ],
+  "grasp_offset_object_m": [
+    0.045,
+    -0.125,
+    0.235
+  ],
+  "wrist_euler_xyz": [
+    0,
+    0,
+    1.5707963267948966
+  ],
+  "raise_target_m": [
+    0.5,
+    -0.44,
+    0.99
+  ],
+  "closure": 0.72,
+  "lift_height_m": 0.12,
+  "events": [
+    {
+      "time_s": 0,
+      "event": "initial"
+    },
+    {
+      "time_s": 2,
+      "event": "settled"
+    },
+    {
+      "time_s": 6,
+      "event": "raise_complete"
+    },
+    {
+      "time_s": 12,
+      "event": "approach_complete"
+    },
+    {
+      "time_s": 14,
+      "event": "closed"
+    },
+    {
+      "time_s": 18,
+      "event": "lift_complete"
+    },
+    {
+      "time_s": 21,
+      "event": "hold_complete"
+    },
+    {
+      "time_s": 26,
+      "event": "transfer_complete"
+    },
+    {
+      "time_s": 29,
+      "event": "supported"
+    },
+    {
+      "time_s": 31,
+      "event": "released"
+    },
+    {
+      "time_s": 34,
+      "event": "withdrawn"
+    }
+  ],
+  "animation_object_motion": "authored rigid object trajectory, kinematic only, no physical success label",
+  "physical_execution": "compile constraints from re-opened Blender animation; measured-state IK and contact-gated time adaptation; do not impose object pose",
+  "human_candidates": [
+    {
+      "id": "handle_wrap",
+      "selected": true,
+      "basis": "same handle geometry and prior calibrated right-hand feasibility"
+    },
+    {
+      "id": "bilateral_rim",
+      "selected": false,
+      "reason": "requires a new two-arm controller; outside first direct-animation test"
+    }
+  ],
+  "withdraw_delta_m": [
+    0.06,
+    -0.03,
+    0.06
+  ],
+  "skill_family": "g1_revo2_right_handle_basket_place_v1",
+  "tabletop_aabb_m": [
+    [
+      -0.56,
+      -0.3,
+      0.7
+    ],
+    [
+      0.56,
+      0.3,
+      0.75
+    ]
+  ]
+}

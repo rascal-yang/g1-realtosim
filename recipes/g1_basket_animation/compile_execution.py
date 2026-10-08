@@ -1,0 +1,20 @@
+import os
+"""Translate evaluated Blender scene constraints into the existing physical skill interface."""
+from pathlib import Path
+import json,hashlib,numpy as np
+from scipy.spatial.transform import Rotation as R
+B=Path(os.environ['G1_TASK_DIR']);d=np.load(B/'trajectory/g1_from_blender.npz');report=json.loads((B/'reports/blender_export.json').read_text());assert max(report['roundtrip_error'].values())<1e-4
+spec=json.loads((B/'motion_spec.json').read_text());events={x['event']:round(x['time_s']*spec['fps']) for x in spec['events']};q=d['root_quaternion_wxyz'][0];root_yaw=R.from_quat(q[[1,2,3,0]]).as_euler('xyz')[2];assert abs(root_yaw-np.pi/2)<1e-5
+# Geometry is read back from Blender; old config supplies controller/safety limits only.
+cfg=json.loads((B/'controller_defaults.json').read_text());cfg.update(version='blender_authored_constraints_v1',start_root_m=d['root_position'][0].tolist(),object_position_m=(d['object_position'][0]+[0,0,.002]).tolist(),object_yaw_rad=float(R.from_quat(d['object_quaternion_wxyz'][0][[1,2,3,0]]).as_euler('xyz')[2]),palm_offset_object_m=(d['palm_position'][events['approach_complete']]-d['object_position'][events['approach_complete']]).tolist(),raise_target_m=d['palm_position'][events['raise_complete']].tolist(),place_target_xy_m=d['object_position'][events['supported'],:2].tolist(),lift_m=float(d['object_position'][events['lift_complete'],2]-d['object_position'][0,2]),withdraw_m=(d['palm_position'][events['withdrawn']]-d['palm_position'][events['released']]).tolist(),raise_steps=200,approach_steps=300,transfer_steps=400,max_control_steps=4000,video_source=None,annotation_source='Evaluated Blender animation transforms and semantic markers',manual_user_annotation_minutes=None)
+# Hand normalized closure from imported joint limits, excluding thumb opposition and mimic joints.
+import xml.etree.ElementTree as ET
+js=ET.parse(B/'assets/brainco_candidate/revo2_right_clean.urdf').getroot().findall('joint');order=json.loads((B/'trajectory/kinematic_metadata.json').read_text())['hand_joint_names']['right'];ratios=[]
+for j in js:
+ if j.get('type')=='fixed' or j.find('mimic') is not None or 'thumb_metacarpal' in j.get('name'):continue
+ lim=j.find('limit');closed=max([float(lim.get('lower')),float(lim.get('upper'))],key=abs);ratios.append(d['right_joint_position'][events['closed'],order.index(j.get('name'))]/closed)
+cfg['closure']=float(np.median(ratios));assert .65<cfg['closure']<.8
+# Preserve the authored target orientation, measured through actual link quaternions.
+m=json.loads((B/'trajectory/kinematic_metadata.json').read_text());i=m['body_names'].index('right_wrist_yaw_link');wq=d['body_quaternion_wxyz'][events['approach_complete'],i];cfg['wrist_euler_xyz']=R.from_quat(wq[[1,2,3,0]]).as_euler('xyz').tolist()
+sha=hashlib.sha256((B/'trajectory/g1_from_blender.npz').read_bytes()).hexdigest();cfg['source_animation']={'blend':str(B/'animation/assets/g1_basket_authored.blend'),'trajectory_sha256':sha,'trajectory':str(B/'trajectory/g1_from_blender.npz'),'events':events,'input_semantics':'authored reference, not measured physical demonstration'}
+(B/'config.json').write_text(json.dumps(cfg,indent=2));(B/'reports/execution_adaptation.json').write_text(json.dumps({'blender_trajectory_sha256':sha,'geometry_readback_fields':['root','object initial','right palm approach relative to object','raise','lift height','placement target','withdraw vector','wrist rotation','closure'],'timing':'contact/convergence gates replace authored keyframe timing; physical transfer uses400steps (8s), independent of authored duration; conservative lower/seat/release and hold preserved','controller':'Existing SONIC stationary balance plus actual-state right-arm IK/gravity compensation; does not blindly apply authored q as actuator commands','previous_successful_joint_trajectory_used':False,'object_pose_forced_during_physics':False,'strict_tracking_claim':False},indent=2));print({k:cfg[k] for k in ['palm_offset_object_m','place_target_xy_m','withdraw_m','closure']})

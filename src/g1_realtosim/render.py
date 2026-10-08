@@ -12,6 +12,7 @@ parser.add_argument('--profile',choices=['rt2','pt128'],default='rt2')
 parser.add_argument('--rt2-updates',type=int,choices=[1,2,4],default=1)
 parser.add_argument('--start',type=int,default=0)
 parser.add_argument('--count',type=int)
+parser.add_argument('--video-only',action='store_true',help='Save H.264 RGB plus exact HDF5 frame/camera indices; omit duplicate lossless RGB dataset')
 args=parser.parse_args()
 manifest=args.episode.resolve(); config=read_json(manifest)
 P={k:str(resolve(config[k],manifest.parent)) for k in ['source_raw','stage']}
@@ -29,7 +30,7 @@ with h5py.File(P['source_raw']) as raw:
     P['realtime_updates_per_pose']=args.rt2_updates
 fps=1/(dt*stride)
 O.mkdir(parents=True)
-write_json(O/'protocol.json',{**P,'profile':route,'fps':fps,'episode':str(manifest),
+write_json(O/'protocol.json',{**P,'profile':route,'fps':fps,'video_only':args.video_only,'episode':str(manifest),
     'source_raw_sha256':sha256(P['source_raw']),'stage_sha256':sha256(P['stage']),
     'camera_calibration':calibration,'physics_advanced':False})
 if route=='rt2':
@@ -59,6 +60,9 @@ try:
     except Exception as exc:viewport_report.append({'error':str(exc)})
     world=World(physics_dt=.005,rendering_dt=.04,stage_units_in_meters=1,physics_prim_path='/World/physicsScene')
     settings=carb.settings.get_settings();settings.set_float('/rtx/post/tonemap/exposureKey',.6)
+    # Kit's editor grid can leak into offscreen captures even with viewport
+    # updates disabled. This is a display overlay, not scene geometry.
+    settings.set_bool('/app/viewport/grid/enabled',False)
     settings.set_bool('/rtx-transient/dlssg/enabled',False)
     cam=UsdGeom.Camera.Define(stage,config.get('camera_prim','/World/Capture/head'));cam.ClearXformOpOrder();camop=cam.AddTransformOp()
     cam.CreateHorizontalApertureAttr(36);cam.CreateVerticalApertureAttr(27)
@@ -88,12 +92,17 @@ try:
             if group not in f: continue
             pk='body_position_world' if group=='observation' else 'body_position'
             groups.append((prefix,json.loads(f.attrs[key]),f[group+'/'+pk][:],f[group+'/body_quaternion_wxyz'][:]))
-        torso=groups[0][1].index(calibration['body_name']);bodyp=groups[0][2];bodyq=groups[0][3]
+        fixed_camera=config.get('fixed_camera')
+        torso=None if fixed_camera else groups[0][1].index(calibration['body_name'])
+        bodyp=groups[0][2];bodyq=groups[0][3]
         entries=[]
         for prefix,names,ps,qs in groups:
-            for j,name in enumerate(names):entries.append((config.get('env_prim','/World/envs/env_0')+'/'+prefix+'/'+name,ps[:,j],qs[:,j]))
+            for j,name in enumerate(names):
+                path=(config['body_prim_prefix']+'/'+name if 'body_prim_prefix' in config else config.get('env_prim','/World/envs/env_0')+'/'+prefix+'/'+name)
+                entries.append((path,ps[:,j],qs[:,j]))
         entries.append((config.get('object_prim','/World/envs/env_0/Object'),f['observation/object_position'][:],f['observation/object_quaternion_wxyz'][:]))
-        for name in f['scene']:
+        # Static-only backgrounds have no additional scene state group.
+        for name in f.get('scene', {}):
             path=config['scene_prims'][name]
             entries.append((path,f['scene/'+name+'/position'][:],f['scene/'+name+'/quaternion_wxyz'][:]))
         # Cache authored world scales and immutable ancestors before any transforms change.
@@ -112,7 +121,10 @@ try:
                 q=qs[step];m=Gf.Matrix4d(1);m.SetRotate(Gf.Quatd(float(q[0]),Gf.Vec3d(*map(float,q[1:]))));m.SetTranslateOnly(Gf.Vec3d(*map(float,ps[step])))
                 pi=UsdGeom.XformCache().GetLocalToWorldTransform(parent).GetInverse() if parent_inv is None else parent_inv
                 op.Set(scale*m*pi)
-            q=bodyq[step,torso];rot=Rotation.from_quat(q[[1,2,3,0]]);eye=bodyp[step,torso]+rot.apply(calibration['body_local_translation_m']);direction=rot.apply([np.cos(np.deg2rad(calibration['head_pitch_down_deg'])),0,-np.sin(np.deg2rad(calibration['head_pitch_down_deg']))]);up=rot.apply([0,0,1])
+            if fixed_camera:
+                eye=np.array(fixed_camera['eye'],dtype=float);direction=np.array(fixed_camera['target'],dtype=float)-eye;up=np.array([0.,0.,1.])
+            else:
+                q=bodyq[step,torso];rot=Rotation.from_quat(q[[1,2,3,0]]);eye=bodyp[step,torso]+rot.apply(calibration['body_local_translation_m']);direction=rot.apply([np.cos(np.deg2rad(calibration['head_pitch_down_deg'])),0,-np.sin(np.deg2rad(calibration['head_pitch_down_deg']))]);up=rot.apply([0,0,1])
             m=Gf.Matrix4d().SetLookAt(Gf.Vec3d(*eye),Gf.Vec3d(*(eye+direction)),Gf.Vec3d(*up)).GetInverse();camop.Set(m)
             return np.asarray(m).T@np.diag([1,-1,-1,1])
         def render(initial=False,warmup=False):
@@ -145,19 +157,23 @@ try:
         (O/'state_restore_validation.json').write_text(json.dumps(checks,indent=2))
         skeys=rtpt_keys+['/persistent/rtx/modes/rt2/enabled','/omni/replicator/asyncRendering','/app/asyncRendering','/rtx/reflections/enabled','/rtx/translucency/enabled','/rtx/indirectDiffuse/enabled','/rtx/rendermode','/rtx/pathtracing/spp','/rtx/pathtracing/totalSpp','/rtx/pathtracing/clampSpp','/rtx/pathtracing/adaptiveSampling/enabled','/rtx/pathtracing/adaptiveSampling/targetError','/rtx/pathtracing/optixDenoiser/enabled','/rtx/pathtracing/maxBounces','/rtx/pathtracing/maxSpecularAndTransmissionBounces','/rtx/post/aa/op','/rtx/post/dlss/execMode','/rtx-transient/dlssg/enabled','/rtx/post/tonemap/exposureKey','/rtx/post/histogram/enabled']
         skeys += ['/renderer/activeGpu','/renderer/multiGpu/enabled','/app/renderer/waitIdle']
+        skeys.append('/app/viewport/grid/enabled')
         actual_settings={k:settings.get(k) for k in skeys}
         (O/'settings.json').write_text(json.dumps({'settings':actual_settings,'viewport':viewport_report,'render_product':str(product.path),'static_transform_skips':static_report},indent=2))
         steps=np.asarray(P['control_indices']);out['control_index']=steps;out['timestamp']=f['observation/timestamp'][:][steps]
         for name in ['observation','action','physics','next_observation','brainco','scene']:
             if name in f: out[name]=h5py.ExternalLink(P['source_raw'],'/'+name)
         out.attrs['source']=P['source_raw'];out.attrs['visual_realism_accepted']=False;out.attrs['physics_advanced']=False;out.attrs['route']=route;out.attrs['camera_calibration']=json.dumps(calibration);out.attrs['fps']=fps
-        rgbout=out.create_dataset('rgb',(len(steps),480,640,3),dtype='u1',chunks=(1,480,640,3),compression='lzf');cvout=out.create_dataset('world_T_camera_cv',(len(steps),4,4),dtype='f8')
+        out.attrs['rgb_storage']='video.mp4 H.264 (lossy); no lossless RGB dataset' if args.video_only else 'lossless HDF5 rgb plus H.264 video'
+        rgbout=None if args.video_only else out.create_dataset('rgb',(len(steps),480,640,3),dtype='u1',chunks=(1,480,640,3),compression='lzf');cvout=out.create_dataset('world_T_camera_cv',(len(steps),4,4),dtype='f8')
         writer=imageio.get_writer(O/'video.mp4',fps=fps,codec='libx264',quality=9,macro_block_size=1)
         start=time.monotonic();records=[]
         with (O/'timings.jsonl').open('w',buffering=1) as log:
             for i,step in enumerate(steps):
                 frame_start=time.monotonic();t=time.monotonic();matrix=pose(step);pose_s=time.monotonic()-t
-                rgb,stats=render();t=time.monotonic();rgbout[i]=rgb;cvout[i]=matrix;writer.append_data(rgb);write_s=time.monotonic()-t
+                rgb,stats=render();t=time.monotonic()
+                if rgbout is not None:rgbout[i]=rgb
+                cvout[i]=matrix;writer.append_data(rgb);write_s=time.monotonic()-t
                 stats.update(frame=i,control_index=int(step),pose_s=pose_s,write_s=write_s,frame_s=time.monotonic()-frame_start);records.append(stats);log.write(json.dumps(stats)+'\n')
                 if i%25==0 or i==len(steps)-1:
                     imageio.imwrite(O/f'frame_{i:05d}.png',rgb)

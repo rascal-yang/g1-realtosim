@@ -1,0 +1,8 @@
+{
+  "python": "/path/to/python",
+  "blender": "/path/to/blender",
+  "sonic_root": "/path/to/sonic_root",
+  "template_experiment": "/path/to/template_experiment",
+  "imported_scene": "/path/to/imported_scene",
+  "env": {}
+}

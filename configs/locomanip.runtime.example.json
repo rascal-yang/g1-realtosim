@@ -1,0 +1,6 @@
+{
+  "panda_urdf": "/path/to/isaacsim/exts/isaacsim.asset.importer.urdf/data/urdf/robots/franka_description/robots/panda_arm_hand.urdf",
+  "robot_cache": "/path/to/experiments/robot_cache",
+  "office_usd": "/path/to/asset_tasks/20260920_photo_scene/assets/scene.usda",
+  "box_usd": "/path/to/experiments/20260922_fullbody_hoi/assets/boxsmall.usda"
+}
