@@ -3,11 +3,13 @@ from pathlib import Path
 import os,sys,json,time
 BOOT=time.monotonic()
 from .common import read_json, write_json, resolve, sha256
+from .render_settings import configure_rt2, startup_arguments, offline_update_count
 import argparse
 parser=argparse.ArgumentParser()
 parser.add_argument('--episode',type=Path,required=True)
 parser.add_argument('--output',type=Path,required=True)
 parser.add_argument('--profile',choices=['rt2','pt128'],default='rt2')
+parser.add_argument('--rt2-updates',type=int,choices=[1,2,4],default=1)
 parser.add_argument('--start',type=int,default=0)
 parser.add_argument('--count',type=int)
 args=parser.parse_args()
@@ -24,7 +26,7 @@ with h5py.File(P['source_raw']) as raw:
     P['warmup_control_indices']=[P['control_indices'][0]]*10
     calibration=json.loads(raw.attrs['camera_calibration'])['head']
     if (calibration['width'],calibration['height'])!=(640,480):raise ValueError('Current renderer contract is 640x480')
-    P['realtime_updates_per_pose']=4
+    P['realtime_updates_per_pose']=args.rt2_updates
 fps=1/(dt*stride)
 O.mkdir(parents=True)
 write_json(O/'protocol.json',{**P,'profile':route,'fps':fps,'episode':str(manifest),
@@ -32,7 +34,7 @@ write_json(O/'protocol.json',{**P,'profile':route,'fps':fps,'episode':str(manife
     'camera_calibration':calibration,'physics_advanced':False})
 if route=='rt2':
     from isaacsim import SimulationApp
-    app=SimulationApp({'headless':True,'renderer':'RealTimePathTracing','extra_args':['--/persistent/rtx/modes/rt2/enabled=true','--/exts/omni.replicator.core/Orchestrator/enabled=false','--/app/renderer/waitIdle=true']})
+    app=SimulationApp({'headless':True,'renderer':'RealTimePathTracing','extra_args':startup_arguments()+['--/exts/omni.replicator.core/Orchestrator/enabled=false']})
 else:
     from isaaclab.app import AppLauncher
     app=AppLauncher(headless=True,enable_cameras=True,device='cuda:0').app
@@ -67,14 +69,11 @@ try:
     settings.set_bool('/app/asyncRendering',False)
     if route=='rt2': assert settings.get('/persistent/rtx/modes/rt2/enabled') is True
     # Preserve the mode selected by SimulationApp rather than calling the legacy realtime helper.
-    P['realtime_updates_per_pose']=4
+    P['realtime_updates_per_pose']=args.rt2_updates
     rtpt_keys=['/rtx/rtpt/maxBounces','/rtx/rtpt/maxSpecularAndTransmissionBounces','/rtx/rtpt/translucency/virtualMotion/enabled','/rtx/post/aa/op','/rtx/post/dlss/execMode']
     (O/'rtpt_defaults.json').write_text(json.dumps({k:settings.get(k) for k in rtpt_keys},indent=2))
     if route=='rt2':
-        settings.set_int('/rtx/post/aa/op',4)
-        settings.set_int('/rtx/rtpt/maxBounces',4)
-        settings.set_int('/rtx/rtpt/maxSpecularAndTransmissionBounces',6)
-        settings.set_bool('/rtx/rtpt/translucency/virtualMotion/enabled',True)
+        configure_rt2(settings)
     else:
         rep.settings.set_render_pathtraced(samples_per_pixel=128)
         settings.set_int('/rtx/pathtracing/clampSpp',128)
@@ -116,10 +115,10 @@ try:
             q=bodyq[step,torso];rot=Rotation.from_quat(q[[1,2,3,0]]);eye=bodyp[step,torso]+rot.apply(calibration['body_local_translation_m']);direction=rot.apply([np.cos(np.deg2rad(calibration['head_pitch_down_deg'])),0,-np.sin(np.deg2rad(calibration['head_pitch_down_deg']))]);up=rot.apply([0,0,1])
             m=Gf.Matrix4d().SetLookAt(Gf.Vec3d(*eye),Gf.Vec3d(*(eye+direction)),Gf.Vec3d(*up)).GetInverse();camop.Set(m)
             return np.asarray(m).T@np.diag([1,-1,-1,1])
-        def render(initial=False):
+        def render(initial=False,warmup=False):
             updates=0;readbacks=0;stable=0;previous=None;render_s=0.;readback_s=0.
             if route=='rt2':
-                for _ in range(20 if initial else P['realtime_updates_per_pose']):
+                for _ in range(offline_update_count(initial,warmup,P['realtime_updates_per_pose'])):
                     t=time.monotonic();world.render();render_s+=time.monotonic()-t;updates+=1
                 t=time.monotonic();rgb=np.asarray(ann.get_data())[:,:,:3].copy();readback_s+=time.monotonic()-t;readbacks=1
             else:
@@ -134,7 +133,7 @@ try:
                 if stable<2:raise RuntimeError('Accumulation did not settle')
             return rgb,dict(updates=updates,readbacks=readbacks,identical_final_updates=stable,render_s=render_s,readback_s=readback_s)
         startup=time.monotonic()-BOOT;warm=time.monotonic()
-        for j,step in enumerate(P['warmup_control_indices']):pose(step,first=j==0);render(initial=j==0)
+        for j,step in enumerate(P['warmup_control_indices']):pose(step,first=j==0);render(initial=j==0,warmup=True)
         warmup=time.monotonic()-warm
         # Validate every restored object's world position and orientation at the first measured state.
         pose(P['control_indices'][0]);cache=UsdGeom.XformCache();checks=[]
@@ -145,6 +144,7 @@ try:
         assert max(c['quaternion_error'] for c in checks)<1e-6
         (O/'state_restore_validation.json').write_text(json.dumps(checks,indent=2))
         skeys=rtpt_keys+['/persistent/rtx/modes/rt2/enabled','/omni/replicator/asyncRendering','/app/asyncRendering','/rtx/reflections/enabled','/rtx/translucency/enabled','/rtx/indirectDiffuse/enabled','/rtx/rendermode','/rtx/pathtracing/spp','/rtx/pathtracing/totalSpp','/rtx/pathtracing/clampSpp','/rtx/pathtracing/adaptiveSampling/enabled','/rtx/pathtracing/adaptiveSampling/targetError','/rtx/pathtracing/optixDenoiser/enabled','/rtx/pathtracing/maxBounces','/rtx/pathtracing/maxSpecularAndTransmissionBounces','/rtx/post/aa/op','/rtx/post/dlss/execMode','/rtx-transient/dlssg/enabled','/rtx/post/tonemap/exposureKey','/rtx/post/histogram/enabled']
+        skeys += ['/renderer/activeGpu','/renderer/multiGpu/enabled','/app/renderer/waitIdle']
         actual_settings={k:settings.get(k) for k in skeys}
         (O/'settings.json').write_text(json.dumps({'settings':actual_settings,'viewport':viewport_report,'render_product':str(product.path),'static_transform_skips':static_report},indent=2))
         steps=np.asarray(P['control_indices']);out['control_index']=steps;out['timestamp']=f['observation/timestamp'][:][steps]

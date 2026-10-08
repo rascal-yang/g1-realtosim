@@ -29,6 +29,7 @@ def main():
     p=sub.add_parser('render',help='Render existing g1_capture_v1 states without advancing physics')
     p.add_argument('--episode',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--profile',choices=['rt2','pt128'],default='rt2');p.add_argument('--start',type=int,default=0);p.add_argument('--count',type=int)
+    p.add_argument('--rt2-updates',type=int,choices=[1,2,4],default=1)
     for name in ['verify','export']:
         p=sub.add_parser(name);p.add_argument('--raw',type=Path,required=True);p.add_argument('--frames',type=Path,required=True)
         if name=='export':
@@ -44,7 +45,7 @@ def main():
                 'note':'Presence check only; render smoke test is needed to verify GPU/driver compatibility.'}
     elif a.command=='render':
         command=[interpreter(cfg['isaac_python'],base) if 'isaac_python' in cfg else sys.executable,'-m','g1_realtosim.render',
-                 '--episode',str(a.episode.resolve()),'--output',str(a.output.resolve()),'--profile',a.profile,'--start',str(a.start)]
+                 '--episode',str(a.episode.resolve()),'--output',str(a.output.resolve()),'--profile',a.profile,'--start',str(a.start),'--rt2-updates',str(a.rt2_updates)]
         if a.count is not None:command+=['--count',str(a.count)]
         log=a.output.resolve().with_suffix('.render.log')
         if a.output.exists():raise FileExistsError(a.output)

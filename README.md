@@ -94,3 +94,7 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 ## 人体交互视频到 G1
 
 执行提示与验收要求见 [HUMAN_VIDEO_TO_SIM_PROMPT.md](docs/HUMAN_VIDEO_TO_SIM_PROMPT.md)，涵盖全身重建、独立物体跟踪、重定向、物理支撑基线与视觉质量检查。该文档不表示端到端抓取已通过。
+
+## 渲染配置与对比
+
+当前RT2原生DLAA默认普通状态1次更新，支持2/4次对照；首次采集预热单独处理。参数、历史A/B/C/D与最新D4/D2/D1计时、画质边界和运行命令见 [渲染说明](docs/RENDERING.md)，[四路历史视频](media/rendering_comparisons/abcd_20260921.mp4)已作为用户授权的样例纳入Git。保持视觉未验收标签；Git源码之外仍需对应场景/模型资源。
